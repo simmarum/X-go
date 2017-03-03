@@ -1,6 +1,8 @@
 
 local composer = require( "composer" )
 require("ship")
+require("asteroid")
+require("laser")
 local scene = composer.newScene()
 
 -- -----------------------------------------------------------------------------------
@@ -12,47 +14,10 @@ local physics = require( "physics" )
 physics.start()
 physics.setGravity( 0, 0 )
 
--- Configure image sheet
-local sheetOptions =
-{
-  frames =
-  {
-    {   -- 1) asteroid 1
-      x = 0,
-      y = 0,
-      width = 102,
-      height = 85
-    },
-    {   -- 2) asteroid 2
-      x = 0,
-      y = 85,
-      width = 90,
-      height = 83
-    },
-    {   -- 3) asteroid 3
-      x = 0,
-      y = 168,
-      width = 100,
-      height = 97
-    },
-    {   -- 4) ship
-      x = 0,
-      y = 265,
-      width = 98,
-      height = 79
-    },
-    {   -- 5) laser
-      x = 98,
-      y = 265,
-      width = 14,
-      height = 40
-    },
-  }
-}
-local objectSheet = graphics.newImageSheet( "gameObjects.png", sheetOptions )
 
 -- Initialize variables
 local score = 0
+local destroyAsteroid = 0
 
 local asteroidsTable = {}
 
@@ -60,6 +25,7 @@ local myship
 local gameLoopTimer
 local livesText
 local scoreText
+local destroyAsteroidText
 
 local backGroup
 local mainGroup
@@ -68,9 +34,6 @@ local uiGroup
 local explosionSound
 explosionSound = audio.loadSound( "audio/explosion.mp3" )
 
-local fireSound
-fireSound = audio.loadSound( "audio/fire.mp3" )
-
 local musicTrack
 musicTrack = audio.loadStream( "audio/80s-Space-Game_Looping.mp3")
 
@@ -78,63 +41,44 @@ musicTrack = audio.loadStream( "audio/80s-Space-Game_Looping.mp3")
 local function updateText()
   livesText.text = "Lives: " .. myship.lives
   scoreText.text = "Score: " .. score
+  destroyAsteroidText.text = "Asteroid: " .. destroyAsteroid
 end
 
 
 local function createAsteroid()
 
   local whichAsteroid = math.random( 3 )
-  local newAsteroid = display.newImageRect( mainGroup, objectSheet, whichAsteroid, 102, 85 )
+  local newAsteroid = Asteroid:new(nil,whichAsteroid,60,90,mainGroup,"asteroid")
   table.insert( asteroidsTable, newAsteroid )
-  local newAsteroid_outline = graphics.newOutline( 2, objectSheet, whichAsteroid )
-  physics.addBody( newAsteroid, "dynamic", { outline=newAsteroid_outline, bounce=0.8 } )
-  newAsteroid.myName = "asteroid"
-
   local whereFrom = math.random( 4 )
   local heightRand = display.contentHeight * 0.9
 
   if ( whereFrom == 1 ) then
     -- From the left
-    newAsteroid.x = -60
-    newAsteroid.y = math.random( heightRand )
-    newAsteroid:setLinearVelocity( math.random( 60,150 ), math.random( -50,100 ) )
+    newAsteroid.display.x = -60
+    newAsteroid.display.y = math.random( heightRand )
+    newAsteroid.display:setLinearVelocity( math.random( 60,150 ), math.random( -50,100 ) )
   elseif ( whereFrom == 2 ) then
     -- From the top
-    newAsteroid.x = math.random( display.contentWidth )
-    newAsteroid.y = -60
-    newAsteroid:setLinearVelocity( math.random( -60,60 ), math.random( 80,150 ) )
+    newAsteroid.display.x = math.random( display.contentWidth )
+    newAsteroid.display.y = -60
+    newAsteroid.display:setLinearVelocity( math.random( -60,60 ), math.random( 80,150 ) )
   elseif ( whereFrom == 3 ) then
     -- From the right
-    newAsteroid.x = display.contentWidth + 60
-    newAsteroid.y = math.random( heightRand )
-    newAsteroid:setLinearVelocity( math.random( -150,-60 ), math.random( -50,100 ) )
+    newAsteroid.display.x = display.contentWidth + 60
+    newAsteroid.display.y = math.random( heightRand )
+    newAsteroid.display:setLinearVelocity( math.random( -150,-60 ), math.random( -50,100 ) )
   elseif ( whereFrom == 4 ) then
     -- From the down
-    newAsteroid.x = math.random( display.contentWidth )
-    newAsteroid.y = display.contentHeight + 60
-    newAsteroid:setLinearVelocity( math.random( -60,60 ), math.random( -150,-80 ) )
+    newAsteroid.display.x = math.random( display.contentWidth )
+    newAsteroid.display.y = display.contentHeight + 60
+    newAsteroid.display:setLinearVelocity( math.random( -60,60 ), math.random( -150,-80 ) )
   end
 
-  newAsteroid:applyTorque( math.random( -6,6 ) )
+  newAsteroid.display:applyTorque( math.random( -6,6 ) )
 end
 
-local function fireLaser()
 
-  -- Play fire sound!
-  audio.play( fireSound )
-  local newLaser = display.newImageRect( mainGroup, objectSheet, 5, 14, 40 )
-  physics.addBody( newLaser, "dynamic", { isSensor=true } )
-  newLaser.isBullet = true
-  newLaser.myName = "laser"
-
-  newLaser.x = myship.display.x
-  newLaser.y = myship.display.y
-  newLaser:toBack()
-
-  transition.to( newLaser, { y=-40, time=myship.display.y/2,
-      onComplete = function() display.remove( newLaser ) end
-      } )
-end
 
 
 local function dragShip( event )
@@ -171,10 +115,10 @@ local function gameLoop()
   for i = #asteroidsTable, 1, -1 do
     local thisAsteroid = asteroidsTable[i]
 
-    if ( thisAsteroid.x < -100 or
-      thisAsteroid.x > display.contentWidth + 100 or
-      thisAsteroid.y < -100 or
-      thisAsteroid.y > display.contentHeight + 100 )
+    if ( thisAsteroid.display.x < -100 or
+      thisAsteroid.display.x > display.contentWidth + 100 or
+      thisAsteroid.display.y < -100 or
+      thisAsteroid.display.y > display.contentHeight + 100 )
     then
       display.remove( thisAsteroid )
       table.remove( asteroidsTable, i )
@@ -206,6 +150,10 @@ local function endGame()
   composer.gotoScene( "highscores", { time=800, effect="crossFade" } )
 end
 
+local function tap()
+  myship:fireLaser()
+  end
+
 local function onCollision( event )
 
   if ( event.phase == "began" ) then
@@ -216,6 +164,34 @@ local function onCollision( event )
     if ( ( obj1.myName == "laser" and obj2.myName == "asteroid" ) or
       ( obj1.myName == "asteroid" and obj2.myName == "laser" ) )
     then
+
+      
+      
+      -- Which object has asteroid
+      local asteroid
+      if(obj1.myName == "asteroid") then asteroid = obj1
+      else asteroid = obj2
+      end
+
+      -- Increase score by asteroid type
+      if(asteroid.sequence == "1" )
+      then score = score + (myship.laser * 50)
+      elseif(asteroid.sequence == "2")
+      then score = score + (myship.laser * 75)
+      elseif(asteroid.sequence == "3")
+      then score = score + (myship.laser * 100)
+      end
+      scoreText.text = "Score: " .. score
+      
+      -- Change laser ;p (update destroyAsteroid)
+      destroyAsteroid = destroyAsteroid + 1
+      if(destroyAsteroid % 2 == 0)
+      then myship.laser = 2
+      elseif (destroyAsteroid % 2 == 1)
+      then myship.laser = 1
+      end
+      destroyAsteroidText.text = "Asteroid: " .. destroyAsteroid
+      
       -- Remove both the laser and asteroid
       display.remove( obj1 )
       display.remove( obj2 )
@@ -228,10 +204,6 @@ local function onCollision( event )
           break
         end
       end
-
-      -- Increase score
-      score = score + 100
-      scoreText.text = "Score: " .. score
 
     elseif ( ( obj1.myName == "ship" and obj2.myName == "asteroid" ) or
       ( obj1.myName == "asteroid" and obj2.myName == "ship" ) )
@@ -287,12 +259,14 @@ function scene:create( event )
   myship = Ship:new(nil,0,3,false,display.contentCenterX,display.contentHeight-100,mainGroup,"ship")
 
   -- Display lives and score
-  livesText = display.newText( uiGroup, "Lives: " .. myship.lives, 200, 80, native.systemFont, 36 )
-  scoreText = display.newText( uiGroup, "Score: " .. score, 400, 80, native.systemFont, 36 )
+  livesText = display.newText( uiGroup, "Lives: " .. myship.lives, 150, 80, native.systemFont, 36 )
+  scoreText = display.newText( uiGroup, "Score: " .. score, 300, 80, native.systemFont, 36 )
+  destroyAsteroidText = display.newText ( uiGroup, "Asteroid: " .. destroyAsteroid, 550, 80, native.systemFont, 36 )
 
   -- Add listenery
-  myship.display:addEventListener( "tap", fireLaser )
+  myship.display:addEventListener( "tap", tap )
   myship.display:addEventListener( "touch", dragShip )
+
 end
 
 
