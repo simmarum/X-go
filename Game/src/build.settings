@@ -17,7 +17,7 @@ settings =
 	excludeFiles =
 	{
 		-- Include only the necessary icon files on each platform
-		android = { "Icon.png", "Icon-Small-*.png", "Icon*@2x.png", },
+		android = { "Icon*.png",},
 	},
 	
 	

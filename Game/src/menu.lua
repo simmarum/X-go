@@ -9,17 +9,17 @@ local scene = composer.newScene()
 -- -----------------------------------------------------------------------------------
 
 local function gotoGame()
-	composer.removeScene( "game" )
-	composer.gotoScene( "game", { time=800, effect="crossFade" } )
+	composer.removeScene( "src.game" )
+	composer.gotoScene( "src.game", { time=800, effect="crossFade" } )
 end
 
 local function gotoHighScores()
-	composer.removeScene( "highscores" )
-	composer.gotoScene( "highscores", { time=800, effect="crossFade" } )
+	composer.removeScene( "src.highscores" )
+	composer.gotoScene( "src.highscores", { time=800, effect="crossFade" } )
 end
 
 local musicTrack
-musicTrack = audio.loadStream( "audio/Escape_Looping.mp3")
+musicTrack = audio.loadStream( "res/audio/Escape_Looping.mp3")
 
 -- -----------------------------------------------------------------------------------
 -- Scene event functions
@@ -30,11 +30,11 @@ function scene:create( event )
 
 	local sceneGroup = self.view
 	-- Code here runs when the scene is first created but has not yet appeared on screen
-	local background = display.newImageRect( sceneGroup, "background.png", 800, 1400 )
+	local background = display.newImageRect( sceneGroup, "res/graphic/background.png", 800, 1400 )
 	background.x = display.contentCenterX
 	background.y = display.contentCenterY
 
-	local title = display.newImageRect( sceneGroup, "title.png", 500, 80 )
+	local title = display.newImageRect( sceneGroup, "res/graphic/title.png", 500, 80 )
 	title.x = display.contentCenterX
 	title.y = 200
 

@@ -14,15 +14,16 @@ local sequenceData = {
   {name="2", start = 2, count = 1}
 }
 
-function Laser:new (o,image_number,x,y,group,name)
+function Laser:new (o,image_number,x,y,angle,group,name)
   o = o or {}
   setmetatable(o, self)
   self.__index = self
   self.image_number = image_number
-  self.image = graphics.newImageSheet("laser.png",options)
+  self.image = graphics.newImageSheet("res/graphic/laser.png",options)
   self.display = display.newSprite(group,self.image, sequenceData)
   self.display.x = x
   self.display.y = y
+  self.display.rotation = angle
   local outline = graphics.newOutline(2,self.image,image_number)
   physics.addBody (self.display,"dynamic", {isSensor = true})
   self.display.myName = name

@@ -1,5 +1,5 @@
 local composer = require( "composer" )
- require("mobdebug").start()
+ --require("mobdebug").start()
 -- Hide status bar
 display.setStatusBar( display.HiddenStatusBar )
  
@@ -17,4 +17,4 @@ audio.setVolume( 0.5, { channel=2 } )
 audio.setVolume( 0.5, { channel=3 } )
 
 -- Go to the menu screen
-composer.gotoScene( "menu" )
+composer.gotoScene( "src.menu" )

@@ -45,11 +45,11 @@ local function saveScores()
 end
 
 local function gotoMenu()
-  composer.gotoScene( "menu", { time=800, effect="crossFade" } )
+  composer.gotoScene( "src.menu", { time=800, effect="crossFade" } )
 end
 
 local musicTrack
-musicTrack = audio.loadStream( "audio/Midnight-Crawlers_Looping.mp3")
+musicTrack = audio.loadStream( "res/audio/Midnight-Crawlers_Looping.mp3")
 -- -----------------------------------------------------------------------------------
 -- Scene event functions
 -- -----------------------------------------------------------------------------------
@@ -76,7 +76,7 @@ function scene:create( event )
   -- Save the scores
   saveScores()
 
-  local background = display.newImageRect( sceneGroup, "background.png", 800, 1400 )
+  local background = display.newImageRect( sceneGroup, "res/graphic/background.png", 800, 1400 )
   background.x = display.contentCenterX
   background.y = display.contentCenterY
 

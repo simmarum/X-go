@@ -1,8 +1,8 @@
 
 local composer = require( "composer" )
-require("ship")
-require("asteroid")
-require("laser")
+require("src.ship")
+require("src.asteroid")
+require("src.laser")
 local scene = composer.newScene()
 
 -- -----------------------------------------------------------------------------------
@@ -32,10 +32,10 @@ local mainGroup
 local uiGroup
 
 local explosionSound
-explosionSound = audio.loadSound( "audio/explosion.mp3" )
+explosionSound = audio.loadSound( "res/audio/explosion.mp3" )
 
 local musicTrack
-musicTrack = audio.loadStream( "audio/80s-Space-Game_Looping.mp3")
+musicTrack = audio.loadStream( "res/audio/80s-Space-Game_Looping.mp3")
 
 
 local function updateText()
@@ -47,8 +47,17 @@ end
 
 local function createAsteroid()
 
-  local whichAsteroid = math.random( 3 )
-  local newAsteroid = Asteroid:new(nil,whichAsteroid,60,90,mainGroup,"asteroid")
+  local newAsteroid
+  local maxNumber = 200
+  local whichAsteroid = math.random( maxNumber )
+  if(whichAsteroid <= maxNumber*(1/2))
+  then newAsteroid = Asteroid:new(nil,1,60,90,mainGroup,"asteroid")
+  elseif (whichAsteroid <= maxNumber*(3/4))
+  then newAsteroid = Asteroid:new(nil,2,60,90,mainGroup,"asteroid")
+  elseif (whichAsteroid <= maxNumber*(19/20)) 
+  then newAsteroid = Asteroid:new(nil,3,60,90,mainGroup,"asteroid")
+  else newAsteroid = Asteroid:new(nil,4,60,90,mainGroup,"asteroid")
+  end
   table.insert( asteroidsTable, newAsteroid )
   local whereFrom = math.random( 4 )
   local heightRand = display.contentHeight * 0.9
@@ -146,13 +155,17 @@ end
 
 local function endGame()
   composer.setVariable( "finalScore", score )
-  composer.removeScene( "highscores" )
-  composer.gotoScene( "highscores", { time=800, effect="crossFade" } )
+  composer.removeScene( "src.highscores" )
+  composer.gotoScene( "src.highscores", { time=800, effect="crossFade" } )
 end
 
 local function tap()
-  myship:fireLaser()
+  if(myship.fire == 0)
+  then myship:fireLaser()
+  elseif (myship.fire == 1)
+  then myship:fireLaserCross()
   end
+end
 
 local function onCollision( event )
 
@@ -165,8 +178,6 @@ local function onCollision( event )
       ( obj1.myName == "asteroid" and obj2.myName == "laser" ) )
     then
 
-      
-      
       -- Which object has asteroid
       local asteroid
       if(obj1.myName == "asteroid") then asteroid = obj1
@@ -180,18 +191,20 @@ local function onCollision( event )
       then score = score + (myship.laser * 75)
       elseif(asteroid.sequence == "3")
       then score = score + (myship.laser * 100)
+      elseif( asteroid.sequence == "4")
+      then myship.fire = 1 - myship.fire
       end
       scoreText.text = "Score: " .. score
-      
+      print("$$ "..obj1.myName.." AND "..obj2.myName)
       -- Change laser ;p (update destroyAsteroid)
       destroyAsteroid = destroyAsteroid + 1
-      if(destroyAsteroid % 2 == 0)
+      if(destroyAsteroid % 10 == 0)
       then myship.laser = 2
-      elseif (destroyAsteroid % 2 == 1)
+      elseif (destroyAsteroid % 10 == 3)
       then myship.laser = 1
       end
       destroyAsteroidText.text = "Asteroid: " .. destroyAsteroid
-      
+
       -- Remove both the laser and asteroid
       display.remove( obj1 )
       display.remove( obj2 )
@@ -251,7 +264,7 @@ function scene:create( event )
   sceneGroup:insert( uiGroup )    -- Insert into the scene's view group
 
   -- Load the background
-  local background = display.newImageRect( backGroup, "background.png", 800, 1400 )
+  local background = display.newImageRect( backGroup, "res/graphic/background.png", 800, 1400 )
   background.x = display.contentCenterX
   background.y = display.contentCenterY
 
