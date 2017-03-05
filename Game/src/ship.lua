@@ -38,15 +38,17 @@ function Ship:new (o,image_number,lives,died,x,y,group,name)
   return o
 end
 
- function Ship:fireLaser()
-    -- Play fire sound!
+local function removeLaser (laser)
+  display.remove(laser)
+end
+
+function Ship:fireLaser()
+  -- Play fire sound!
   audio.play( fireSound )
   local newLaser = Laser:new(nil,self.laser,self.display.x,self.display.y,0,self.display.parent,"laser")
   newLaser.display:toBack()
-  transition.to( newLaser.display, { y=-newLaser.display.height, time=self.display.y/velocityFire,
-      onComplete = function() display.remove( newLaser.display ) end
-      } )
-  end
+  transition.to( newLaser.display, { y=-newLaser.display.height, time=self.display.y/velocityFire, onComplete=removeLaser} )
+end
 
 function Ship:fireLaserCross()
   -- Play fire sound
@@ -54,37 +56,29 @@ function Ship:fireLaserCross()
   -- North
   local newLaserN = Laser:new(nil,self.laser,self.display.x,self.display.y,0,self.display.parent,"laser")
   newLaserN.display:toBack()
-  transition.to( newLaserN.display, { y=-newLaserN.display.height, time=self.display.y/velocityFire,
-      onComplete = function() display.remove( newLaserN.display ) end
-      } )
+    transition.moveTo( newLaserN.display, { y=-newLaserN.display.height, time=self.display.y/velocityFire,onComplete=removeLaser} )
   -- East
   local newLaserE = Laser:new(nil,self.laser,self.display.x,self.display.y,90,self.display.parent,"laser")
   newLaserE.display:toBack()
   newLaserE.display.rotate = 90
-  transition.to( newLaserE.display, { x=display.contentWidth + newLaserE.display.height, time=(display.contentWidth-self.display.x)/velocityFire,
-      onComplete = function() display.remove( newLaserE.display ) end
-      } )
-  -- West
-    local newLaserW = Laser:new(nil,self.laser,self.display.x,self.display.y,270,self.display.parent,"laser")
-  newLaserW.display:toBack()
-  newLaserW.display.rotate = 270
-  transition.to( newLaserW.display, { x=-newLaserW.display.height, time=self.display.x/velocityFire,
-      onComplete = function() display.remove( newLaserW.display ) end
-      } )
+      transition.moveTo( newLaserE.display, { x=display.contentWidth + newLaserE.display.height, time=(display.contentWidth-self.display.x)/velocityFire, onComplete=removeLaser} )
   -- South
-    local newLaserS = Laser:new(nil,self.laser,self.display.x,self.display.y,180,self.display.parent,"laser")
+  local newLaserS = Laser:new(nil,self.laser,self.display.x,self.display.y,180,self.display.parent,"laser")
   newLaserS.display:toBack()
   newLaserS.display.rotate = 180
-  transition.to( newLaserS.display, { y=display.contentHeight + newLaserS.display.height, time=(display.contentHeight-self.display.y)/velocityFire,
-      onComplete = function() display.remove( newLaserS.display ) end
-      } )
+      transition.moveTo( newLaserS.display, { y=display.contentHeight + newLaserS.display.height, time=(display.contentHeight-self.display.y)/velocityFire, onComplete=removeLaser} )
+  -- West
+  local newLaserW = Laser:new(nil,self.laser,self.display.x,self.display.y,270,self.display.parent,"laser")
+  newLaserW.display:toBack()
+  newLaserW.display.rotate = 270
+    transition.moveTo( newLaserW.display, { x=-newLaserW.display.height, time=self.display.x/velocityFire, onComplete=removeLaser} )
   end
-  
-function Ship:setDisplay (value)
-  self.display:setSequence(value)
-end
+
+  function Ship:setDisplay (value)
+    self.display:setSequence(value)
+  end
 
 
-function Ship:setLaser(value)
-  self.laser = value
-end
+  function Ship:setLaser(value)
+    self.laser = value
+  end

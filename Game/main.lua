@@ -1,5 +1,5 @@
 local composer = require( "composer" )
- --require("mobdebug").start()
+ require("mobdebug").start()
 -- Hide status bar
 display.setStatusBar( display.HiddenStatusBar )
  
